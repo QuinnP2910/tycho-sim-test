@@ -1,40 +1,89 @@
-import mujoco_py
-import glfw
+import time
+import mujoco
+import mujoco.viewer
+import numpy as np
 
-if __name__ == '__main__':
-    # Load the model
-    model = mujoco_py.load_model_from_path("assets/hebi.xml")
+m = mujoco.MjModel.from_xml_path('./assets/hebi.xml')
+d = mujoco.MjData(m)
+# d.geom_xmat[m.geom('leader_stick').id] = [1, 0, 0, 0, 1, 0, 0, 0, 1]
+mujoco.mj_step(m, d)
 
-    # Create the simulation environment
-    sim = mujoco_py.MjSim(model)
+# Get the site index for 'leader_fixed_chop_tip_no_rot'
+leader_site_idx = m.site('leader_fixed_chop_tip_no_rot').id
 
-    # Set the desired position of the secondary joint(s)
-    desired_position = 0.5
-    sim.data.qpos[9] = desired_position
+x_actuator_idx = m.actuator('x').id
+y_actuator_idx = m.actuator('y').id
+z_actuator_idx = m.actuator('z').id
+# rx_actuator_idx = m.actuator('rx').id
+# ry_actuator_idx = m.actuator('ry').id
+# rz_actuator_idx = m.actuator('rz').id
 
-    # Initialize GLFW and create a rendering context
-    glfw.init()
-    mujoco_py.builder.MujocoPyOpenGLContext(offscreen=True)
+leader_starting_pos_x = d.site_xpos[leader_site_idx][0]
+leader_starting_pos_y = d.site_xpos[leader_site_idx][1]
+leader_starting_pos_z = d.site_xpos[leader_site_idx][2]
+# leader_starting_mat = d.site_xmat[leader_site_idx]
 
-    try:
-        while True:
-            # Update simulation state (e.g., set joint positions)
-            # sim.data.qpos[:] = ...  # Update joint positions if necessary
+def mat2euler(mat):
+    """ Convert Rotation Matrix to Euler Angles.  See rotation.py for notes """
+    mat = mat.reshape(3, 3)
+    mat = np.asarray(mat, dtype=np.float64)
+    assert mat.shape[-2:] == (3, 3), "Invalid shape matrix {}".format(mat)
 
-            # Step the simulation
-            sim.step()
+    cy = np.sqrt(mat[..., 2, 2] * mat[..., 2, 2] + mat[..., 1, 2] * mat[..., 1, 2])
+    condition = True
+    euler = np.empty(mat.shape[:-1], dtype=np.float64)
+    euler[..., 2] = np.where(condition,
+                             -np.arctan2(mat[..., 0, 1], mat[..., 0, 0]),
+                             -np.arctan2(-mat[..., 1, 0], mat[..., 1, 1]))
+    euler[..., 1] = np.where(condition,
+                             -np.arctan2(-mat[..., 0, 2], cy),
+                             -np.arctan2(-mat[..., 0, 2], cy))
+    euler[..., 0] = np.where(condition,
+                             -np.arctan2(mat[..., 1, 2], mat[..., 2, 2]),
+                             0.0)
+    return euler
 
-            # Render the simulation
-            viewer = mujoco_py.MjRenderContextOffscreen(sim, -1)
-            viewer.render(640, 480)  # Set the desired window size
+def calculate_angle_difference(angle1, angle2):
+    diff = angle2 - angle1
+    if diff > np.pi:
+        diff -= 2 * np.pi
+    elif diff < -np.pi:
+        diff += 2 * np.pi
+    return diff
 
-            # Check for user input events (e.g., keyboard or mouse events)
-            glfw.poll_events()
+leader_starting_pos_rx = 0
+leader_starting_pos_ry = 0
+leader_starting_pos_rz = 0
 
-            # Break the loop if the user closes the window
-            if glfw.window_should_close(viewer.window):
-                break
+with mujoco.viewer.launch_passive(m, d) as viewer:
+    while viewer.is_running():
+        # mj_step can be replaced with code that also evaluates
+        # a policy and applies a control signal before stepping the physics.
+        mujoco.mj_step(m, d)
 
-    finally:
-        # Clean up GLFW
-        glfw.terminate()
+        leader_pos = d.site_xpos[leader_site_idx]
+        leader_euler = mat2euler(d.site_xmat[leader_site_idx])
+
+        # print(leader_starting_pos_x)
+        print(leader_pos[0])
+        d.ctrl[x_actuator_idx] = -(leader_pos[0] - leader_starting_pos_x)
+        d.ctrl[y_actuator_idx] = leader_pos[1] - leader_starting_pos_y
+        d.ctrl[z_actuator_idx] = -(leader_pos[2] - leader_starting_pos_z)
+
+        # ALLOWABLE_ROT_MOVEMENT = 0.5
+        # print(leader_euler)
+        # print("[{} {} {}]".format(leader_starting_pos_rx, leader_starting_pos_ry, leader_starting_pos_rz))
+        # d.ctrl[rx_actuator_idx] = calculate_angle_difference(leader_euler[0], leader_starting_pos_rx)
+        # if d.ctrl[rx_actuator_idx] < -ALLOWABLE_ROT_MOVEMENT or d.ctrl[rx_actuator_idx] > ALLOWABLE_ROT_MOVEMENT:
+        #     d.ctrl[rx_actuator_idx] = 0.0
+        # d.ctrl[ry_actuator_idx] = calculate_angle_difference(leader_euler[1], leader_starting_pos_ry)
+        # if d.ctrl[ry_actuator_idx] < -ALLOWABLE_ROT_MOVEMENT or d.ctrl[ry_actuator_idx] > ALLOWABLE_ROT_MOVEMENT:
+        #     d.ctrl[ry_actuator_idx] = 0.0
+        # d.ctrl[rz_actuator_idx] = calculate_angle_difference(leader_euler[2], leader_starting_pos_rz)
+        # if d.ctrl[rz_actuator_idx] < -ALLOWABLE_ROT_MOVEMENT or d.ctrl[rz_actuator_idx] > ALLOWABLE_ROT_MOVEMENT:
+        #     d.ctrl[rz_actuator_idx] = 0.0
+        #
+        # print(d.ctrl[rz_actuator_idx])
+        # Pick up changes to the physics state, apply perturbations, update options from GUI.
+        viewer.sync()
+
