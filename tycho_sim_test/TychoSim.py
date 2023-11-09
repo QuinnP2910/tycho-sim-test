@@ -14,14 +14,14 @@ leader_site_idx = m.site('leader_fixed_chop_tip_no_rot').id
 x_actuator_idx = m.actuator('x').id
 y_actuator_idx = m.actuator('y').id
 z_actuator_idx = m.actuator('z').id
-# rx_actuator_idx = m.actuator('rx').id
-# ry_actuator_idx = m.actuator('ry').id
-# rz_actuator_idx = m.actuator('rz').id
+rx_actuator_idx = m.actuator('rx').id
+ry_actuator_idx = m.actuator('ry').id
+rz_actuator_idx = m.actuator('rz').id
 
 leader_starting_pos_x = d.site_xpos[leader_site_idx][0]
 leader_starting_pos_y = d.site_xpos[leader_site_idx][1]
 leader_starting_pos_z = d.site_xpos[leader_site_idx][2]
-# leader_starting_mat = d.site_xmat[leader_site_idx]
+leader_starting_mat = d.site_xmat[leader_site_idx]
 
 def mat2euler(mat):
     """ Convert Rotation Matrix to Euler Angles.  See rotation.py for notes """
@@ -51,9 +51,9 @@ def calculate_angle_difference(angle1, angle2):
         diff += 2 * np.pi
     return diff
 
-leader_starting_pos_rx = 0
+leader_starting_pos_rx = 3.14
 leader_starting_pos_ry = 0
-leader_starting_pos_rz = 0
+leader_starting_pos_rz = 3.14
 
 with mujoco.viewer.launch_passive(m, d) as viewer:
     while viewer.is_running():
@@ -65,24 +65,21 @@ with mujoco.viewer.launch_passive(m, d) as viewer:
         leader_euler = mat2euler(d.site_xmat[leader_site_idx])
 
         # print(leader_starting_pos_x)
-        print(leader_pos[0])
         d.ctrl[x_actuator_idx] = -(leader_pos[0] - leader_starting_pos_x)
         d.ctrl[y_actuator_idx] = leader_pos[1] - leader_starting_pos_y
         d.ctrl[z_actuator_idx] = -(leader_pos[2] - leader_starting_pos_z)
 
-        # ALLOWABLE_ROT_MOVEMENT = 0.5
-        # print(leader_euler)
-        # print("[{} {} {}]".format(leader_starting_pos_rx, leader_starting_pos_ry, leader_starting_pos_rz))
-        # d.ctrl[rx_actuator_idx] = calculate_angle_difference(leader_euler[0], leader_starting_pos_rx)
-        # if d.ctrl[rx_actuator_idx] < -ALLOWABLE_ROT_MOVEMENT or d.ctrl[rx_actuator_idx] > ALLOWABLE_ROT_MOVEMENT:
-        #     d.ctrl[rx_actuator_idx] = 0.0
-        # d.ctrl[ry_actuator_idx] = calculate_angle_difference(leader_euler[1], leader_starting_pos_ry)
-        # if d.ctrl[ry_actuator_idx] < -ALLOWABLE_ROT_MOVEMENT or d.ctrl[ry_actuator_idx] > ALLOWABLE_ROT_MOVEMENT:
-        #     d.ctrl[ry_actuator_idx] = 0.0
-        # d.ctrl[rz_actuator_idx] = calculate_angle_difference(leader_euler[2], leader_starting_pos_rz)
-        # if d.ctrl[rz_actuator_idx] < -ALLOWABLE_ROT_MOVEMENT or d.ctrl[rz_actuator_idx] > ALLOWABLE_ROT_MOVEMENT:
-        #     d.ctrl[rz_actuator_idx] = 0.0
-        #
+        ALLOWABLE_ROT_MOVEMENT = 1.0
+        d.ctrl[rx_actuator_idx] = calculate_angle_difference(leader_euler[0], leader_starting_pos_rx)
+        if d.ctrl[rx_actuator_idx] < -ALLOWABLE_ROT_MOVEMENT or d.ctrl[rx_actuator_idx] > ALLOWABLE_ROT_MOVEMENT:
+            d.ctrl[rx_actuator_idx] = 0.0
+        d.ctrl[ry_actuator_idx] = calculate_angle_difference(leader_euler[1], leader_starting_pos_ry)
+        if d.ctrl[ry_actuator_idx] < -ALLOWABLE_ROT_MOVEMENT or d.ctrl[ry_actuator_idx] > ALLOWABLE_ROT_MOVEMENT:
+            d.ctrl[ry_actuator_idx] = 0.0
+        d.ctrl[rz_actuator_idx] = -calculate_angle_difference(leader_euler[2], leader_starting_pos_rz)
+        if d.ctrl[rz_actuator_idx] < -ALLOWABLE_ROT_MOVEMENT or d.ctrl[rz_actuator_idx] > ALLOWABLE_ROT_MOVEMENT:
+            d.ctrl[rz_actuator_idx] = 0.0
+
         # print(d.ctrl[rz_actuator_idx])
         # Pick up changes to the physics state, apply perturbations, update options from GUI.
         viewer.sync()

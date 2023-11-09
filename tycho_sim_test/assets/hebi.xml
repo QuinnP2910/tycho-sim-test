@@ -65,6 +65,7 @@
     </default>
     <worldbody>
         <light diffuse=".5 .5 .5" pos="0 0 3" dir="0 0 -1" castshadow="true" />
+        <site name="leader_reference" pos="0.130868 -0.1382641365150507 0.11696986846599812" euler="3.14 0 3.14"/>
         <!-- Arena -->
         <geom name="ground" class="con" pos="0 0 0" rgba="0.9 0.9 0.9 1" size="1 1 10" type="plane" material="table_mat" />
         <camera name="realsense" mode="fixed" pos="0 0 0.3" xyaxes="0 -1 0 0 0 -1" />
@@ -231,12 +232,12 @@
         <!--        <general class="X5" biastype="none" biasprm="2.6611 14.125" joint="HEBI/wrist3/X5_1" name="wrist3" />-->
         <!--        <general class="X5" biastype="none" biasprm="2.6611 14.125" joint="HEBI/chopstick/X5_1" name="chop" />-->
 
-<!--        <general name="x"  site="fixed_chop_tip_no_rot" refsite="reference" gear="1 0 0 0 0 0" class="translation"/>-->
-<!--        <general name="y"  site="fixed_chop_tip_no_rot" refsite="reference" gear="0 1 0 0 0 0" class="translation"/>-->
-<!--        <general name="z"  site="fixed_chop_tip_no_rot" refsite="reference" gear="0 0 1 0 0 0" class="translation"/>-->
-<!--        <general name="rx" site="fixed_chop_tip_no_rot" refsite="reference" gear="0 0 0 1 0 0" class="rotation"/>-->
-<!--        <general name="ry" site="fixed_chop_tip_no_rot" refsite="reference" gear="0 0 0 0 1 0" class="rotation"/>-->
-<!--        <general name="rz" site="fixed_chop_tip_no_rot" refsite="reference" gear="0 0 0 0 0 1" class="rotation"/>-->
+        <general name="tx"  site="leader_fixed_chop_tip_no_rot" refsite="leader_reference" gear="1 0 0 0 0 0" class="translation"/>
+        <general name="ty"  site="leader_fixed_chop_tip_no_rot" refsite="leader_reference" gear="0 1 0 0 0 0" class="translation"/>
+        <general name="tz"  site="leader_fixed_chop_tip_no_rot" refsite="leader_reference" gear="0 0 1 0 0 0" class="translation"/>
+        <general name="trx" site="leader_fixed_chop_tip_no_rot" refsite="leader_reference" gear="0 0 0 1 0 0" class="rotation"/>
+        <general name="try" site="leader_fixed_chop_tip_no_rot" refsite="leader_reference" gear="0 0 0 0 1 0" class="rotation"/>
+        <general name="trz" site="leader_fixed_chop_tip_no_rot" refsite="leader_reference" gear="0 0 0 0 0 1" class="rotation"/>
         <general name="x"  site="fixed_chop_tip_no_rot" refsite="reference" gear="1 0 0 0 0 0" class="translation"/>
         <general name="y"  site="fixed_chop_tip_no_rot" refsite="reference" gear="0 1 0 0 0 0" class="translation"/>
         <general name="z"  site="fixed_chop_tip_no_rot" refsite="reference" gear="0 0 1 0 0 0" class="translation"/>
