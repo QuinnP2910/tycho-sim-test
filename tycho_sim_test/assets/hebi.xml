@@ -2,7 +2,7 @@
     <compiler angle="radian" meshdir="meshes/" />
     <size njmax="500" nconmax="100" />
     <option viscosity="10" integrator="implicit" timestep="0.002" impratio="3">
-        <flag gravity="disable" contact="disable"/>
+        <!-- <flag gravity="disable" contact="disable" /> -->
     </option>
     <asset>
         <mesh name="X8" file="X8.stl" scale="0.001 0.001 0.001" />
@@ -25,7 +25,7 @@
     </asset>
     <default>
         <default class="translation">
-            <general gainprm="10000" biasprm="0 -10000 -1000" biastype="affine" ctrlrange="-0.2 0.2"/>
+            <general gainprm="50000" biasprm="0 -50000 -10" biastype="affine" ctrlrange="-0.2 0.2"/>
         </default>
         <default class="rotation">
             <!--
@@ -34,7 +34,13 @@
             Increase this range to pi or bigger in order to see the instability.
             See here for more details https://mujoco.readthedocs.io/en/latest/XMLreference.html#actuator
             -->
-            <general gainprm="100.0" biasprm="0 -100.0 -10.0" biastype="affine" ctrlrange="-1.571 1.571"/>
+            <general gainprm="1000.0" biasprm="0 -1000.0 -15.0" biastype="affine" ctrlrange="-1.571 1.571"/>
+        </default>
+        <default class="chop_translation">
+            <general gainprm="1000" biasprm="0 -1000 -15" biastype="affine" ctrlrange="-0.2 0.2"/>
+        </default>
+        <default class="chop_rotation">
+            <general gainprm="10.0" biasprm="0 -10.0 -.5" biastype="affine" ctrlrange="-1.571 1.571"/>
         </default>
         <geom contype="0" conaffinity="0" group="0" />
         <site rgba="1 1 0 0.3" />
@@ -43,34 +49,34 @@
         </default>
         <default class="X8">
             <joint damping="16" armature="0.01" frictionloss="0.1" limited="false" />
-            <!-- <position forcelimited="true" forcerange="-20 20" />
+            <position forcelimited="true" forcerange="-20 20" />
             <velocity ctrllimited="true" ctrlrange="-0.001 0.001" />
             <motor forcelimited="true" forcerange="-20 20" ctrllimited="true" ctrlrange="-1 1" />
-            <general ctrllimited="false" />-->
+            <general ctrllimited="false" />
         </default>
         <default class="X8_16">
             <joint damping="40" armature="0.01" frictionloss="0.1" limited="false" />
-            <!--<position forcelimited="true" forcerange="-20 20" />
+            <position forcelimited="true" forcerange="-20 20" />
             <velocity ctrllimited="true" ctrlrange="-0.001 0.001" />
             <motor forcelimited="true" forcerange="-38 38" ctrllimited="true" ctrlrange="-1 1" />
-            <general ctrllimited="false" />-->
+            <general ctrllimited="false" />
         </default>
         <default class="X5">
             <joint damping="3" armature="0.01" frictionloss="0.1" limited="false" />
-            <!--<position forcelimited="true" forcerange="-2.5 2.5" />
+            <position forcelimited="true" forcerange="-2.5 2.5" />
             <velocity ctrllimited="true" ctrlrange="-0.001 0.001" />
             <motor forcelimited="true" forcerange="-2.5 2.5" ctrllimited="true" ctrlrange="-1 1" />
-            <general ctrllimited="false" />-->
+            <general ctrllimited="false" />
         </default>
     </default>
     <worldbody>
         <light diffuse=".5 .5 .5" pos="0 0 3" dir="0 0 -1" castshadow="true" />
-        <site name="leader_reference" pos="0.130868 -0.1382641365150507 0.11696986846599812" euler="3.14 0 3.14"/>
+        <site name="leader_reference" pos="0.130868 -0.1382641365150507 0.11696986846599812" euler="1.57 0 3.14" rgba="1.0 0.0 0.0 1"/>
         <!-- Arena -->
         <geom name="ground" class="con" pos="0 0 0" rgba="0.9 0.9 0.9 1" size="1 1 10" type="plane" material="table_mat" />
         <camera name="realsense" mode="fixed" pos="0 0 0.3" xyaxes="0 -1 0 0 0 -1" />
         <!-- Plate -->
-        <site name="reference" pos="-0.56 -0.175 0.21152225" euler="3.14 0.0 3.14"/>
+        <site name="reference" pos="-0.27236297 -0.23980747  0.11962453" euler="1.57 0.0 3.14"/>
         <body name="plate" pos="-0.46 -0.175 0.01152225">
             <geom name="plate" class="con" rgba="0.5 0.5 0.5 1.0" type="box" size="0.1 0.115 0.0230445"/>
         </body>
@@ -121,7 +127,8 @@
                                 <site name="fixed_chop_tip_no_rot"
                                       pos="0.130868 0.0763349 0.06473519"
                                       type="sphere"
-                                      size="0.001" />
+                                      size="0.001"
+                                      />
                                 <site name="fixed_chop_end"
                                       pos="-0.130868 0.0763349 0.06473519"
                                       quat="0.5 0.5 0.5 0.5"
@@ -173,7 +180,7 @@
         <!-- Leader chopsticks -->
         <body name="leader_chopsticks" pos="0 -0.0740345 0.0402091" quat="0.709438 0.704768 0 0">
             <inertial pos="-0.010267 0.0507442 0.0379799" quat="0.641276 0.450674 0.594973 0.177947" mass="0.4215" diaginertia="0.000651417 0.000496823 0.000437058" />
-            <geom name="leader_stick" class="con" pos="0.000 0.07633497142049881778 0.06473519787338441731" type="capsule" quat="0.707 0 0.707 0" rgba="0.96 0.945 0.871 0.3" size="0.0013 0.13086872462992604760" />
+            <geom name="leader_stick" pos="0.000 0.07633497142049881778 0.06473519787338441731" type="capsule" quat="0.707 0 0.707 0" rgba="0.96 0.945 0.871 0.3" size="0.0013 0.13086872462992604760" />
             <!-- assume the chopsticks radius 0.0013 -->
             <site name="leader_fixed_chop_tip_no_rot"
                   pos="0.130868 0.0763349 0.06473519"
@@ -182,7 +189,7 @@
             <joint name="leader_chopsticks" type="free" />
             <body name="leader_end_effector" pos="0 0.0743 0.04" quat="0.707107 -0.707107 0 0">
                 <inertial pos="0.0246402 0.00944904 0.00600006" quat="-0.153931 0.690149 0.153931 0.690149" mass="0.010" diaginertia="1.34287e-05 1.33988e-05 1.49984e-07" /><!-- rotate center is at the hollow hole-->
-                <geom name="leader_chop" class="con" pos="0.0035 0.0048 0.002" quat="0.389 0.389 0.591 0.591" type="capsule" rgba="0.96 0.945 0.871 0.3" size="0.0013 0.128" />
+                <geom name="leader_chop" pos="0.0035 0.0048 0.002" quat="0.389 0.389 0.591 0.591" type="capsule" rgba="0.96 0.945 0.871 0.3" size="0.0013 0.128" />
                 <!-- this line is important, shift the moving chopsticks' position and quat. size assumed to be 0.0013 radius. -->
                 <site name="leader_rot_chop_tip"
                       pos="0.12112 0.0553884 0.002"
@@ -232,12 +239,12 @@
         <!--        <general class="X5" biastype="none" biasprm="2.6611 14.125" joint="HEBI/wrist3/X5_1" name="wrist3" />-->
         <!--        <general class="X5" biastype="none" biasprm="2.6611 14.125" joint="HEBI/chopstick/X5_1" name="chop" />-->
 
-        <general name="tx"  site="leader_fixed_chop_tip_no_rot" refsite="leader_reference" gear="1 0 0 0 0 0" class="translation"/>
-        <general name="ty"  site="leader_fixed_chop_tip_no_rot" refsite="leader_reference" gear="0 1 0 0 0 0" class="translation"/>
-        <general name="tz"  site="leader_fixed_chop_tip_no_rot" refsite="leader_reference" gear="0 0 1 0 0 0" class="translation"/>
-        <general name="trx" site="leader_fixed_chop_tip_no_rot" refsite="leader_reference" gear="0 0 0 1 0 0" class="rotation"/>
-        <general name="try" site="leader_fixed_chop_tip_no_rot" refsite="leader_reference" gear="0 0 0 0 1 0" class="rotation"/>
-        <general name="trz" site="leader_fixed_chop_tip_no_rot" refsite="leader_reference" gear="0 0 0 0 0 1" class="rotation"/>
+        <general name="tx"  site="leader_fixed_chop_tip_no_rot" refsite="leader_reference" gear="1 0 0 0 0 0" class="chop_translation"/>
+        <general name="ty"  site="leader_fixed_chop_tip_no_rot" refsite="leader_reference" gear="0 1 0 0 0 0" class="chop_translation"/>
+        <general name="tz"  site="leader_fixed_chop_tip_no_rot" refsite="leader_reference" gear="0 0 1 0 0 0" class="chop_translation"/>
+        <general name="trx" site="leader_fixed_chop_tip_no_rot" refsite="leader_reference" gear="0 0 0 1 0 0" class="chop_rotation"/>
+        <general name="try" site="leader_fixed_chop_tip_no_rot" refsite="leader_reference" gear="0 0 0 0 1 0" class="chop_rotation"/>
+        <general name="trz" site="leader_fixed_chop_tip_no_rot" refsite="leader_reference" gear="0 0 0 0 0 1" class="chop_rotation"/>
         <general name="x"  site="fixed_chop_tip_no_rot" refsite="reference" gear="1 0 0 0 0 0" class="translation"/>
         <general name="y"  site="fixed_chop_tip_no_rot" refsite="reference" gear="0 1 0 0 0 0" class="translation"/>
         <general name="z"  site="fixed_chop_tip_no_rot" refsite="reference" gear="0 0 1 0 0 0" class="translation"/>
