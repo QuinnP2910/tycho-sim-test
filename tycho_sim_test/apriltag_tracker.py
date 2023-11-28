@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import math
 
 from TychoSim import TychoSim
 
@@ -29,7 +30,7 @@ def track_apriltag(image):
                                -2.99522420e+01])
 
         # Estimate pose
-        rvec, tvec, _ = cv2.aruco.estimatePoseSingleMarkers(corners, 1.0, cameraMatrix=cameraMatrix,
+        rvec, tvec, _ = cv2.aruco.estimatePoseSingleMarkers(corners, 0.05, cameraMatrix=cameraMatrix,
                                                             distCoeffs=distCoeffs)
 
         # Convert rotation vector to rotation matrix
@@ -40,7 +41,7 @@ def track_apriltag(image):
 
         # Extract euler angles (yaw, pitch, roll)
         angles = cv2.RQDecomp3x3(R)[0]
-        yaw, pitch, roll = angles[0], angles[1], angles[2]
+        yaw, pitch, roll = math.radians(angles[0]), math.radians(angles[1]), math.radians(angles[2])
 
         return tag_id, x, y, z, yaw, pitch, roll
 
@@ -50,7 +51,7 @@ def track_apriltag(image):
 # Main function
 def main(sim):
     # Open video capture (0 for default camera)
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(2)
 
     while cap.isOpened():
         ret, frame = cap.read()
@@ -63,7 +64,7 @@ def main(sim):
 
         if result:
             tag_id, x, y, z, yaw, pitch, roll = result
-            simulation_instance.set_leader_position([x, y, z], [yaw, pitch, roll])
+            simulation_instance.set_leader_position([z, -x, -y], [-roll, -yaw, pitch])
             print(f"AprilTag ID: {tag_id}")
             print(f"Position: ({x:.2f}, {y:.2f}, {z:.2f})")
             print(f"Euler Angles: Yaw={yaw:.2f}, Pitch={pitch:.2f}, Roll={roll:.2f}")
@@ -73,7 +74,10 @@ def main(sim):
         cv2.imshow('AprilTag Tracking', frame)
 
         # Break the loop if 'q' is pressed
-        if cv2.waitKey(1) & 0xFF == ord('q'):
+        if cv2.waitKey(1) & 0xFF == ord('s'):
+            if result:
+                simulation_instance.init_leader_position([z, -x, -y], [-roll, -yaw, pitch])
+        elif cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
     # Release the video capture object
