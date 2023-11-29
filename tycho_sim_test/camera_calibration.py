@@ -5,30 +5,34 @@ import glob
 # termination criteria
 criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 # prepare object points, like (0,0,0), (1,0,0), (2,0,0) ....,(6,5,0)
+# x_range = np.arange(0, 20.0, 2.5)
+# y_range = np.arange(0, 15.0, 2.5)
 objp = np.zeros((6 * 8, 3), np.float32)
+# objp[:, :2] = np.array(np.meshgrid(x_range, y_range)).T.reshape(-1, 2)
 objp[:, :2] = np.mgrid[0:8, 0:6].T.reshape(-1, 2)
+print(objp)
 # Arrays to store object points and image points from all the images.
 objpoints = []  # 3d point in real world space
 imgpoints = []  # 2d points in image plane.
 images = glob.glob('*.jpg')
 for fname in images:
-    for fname in images:
-        print(f"Processing image: {fname}")
-        img = cv.imread(fname)
+    print(f"Processing image: {fname}")
+    img = cv.imread(fname)
 
-        if img is None:
-            print(f"Error: Unable to read image {fname}")
-            continue
+    if img is None:
+        print(f"Error: Unable to read image {fname}")
+        continue
 
-        gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+    gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
 
-        # Find the chessboard corners
-        ret, corners = cv.findChessboardCorners(gray, (8, 6), None)
+    # Find the chessboard corners
+    ret, corners = cv.findChessboardCorners(gray, (8, 6), None)
 
-        if ret:
-            print("Checkerboard corners found!")
-        else:
-            print("Checkerboard corners not found!")
+    if ret:
+        print("Checkerboard corners found!")
+    else:
+        print("Checkerboard corners not found!")
+
     # If found, add object points, image points (after refining them)
     if ret == True:
         objpoints.append(objp)
@@ -39,10 +43,10 @@ for fname in images:
         cv.imshow('img', img)
         cv.waitKey(500)
 
-    # Perform camera calibration by
-    # passing the value of above found out 3D points (threedpoints)
-    # and its corresponding pixel coordinates of the
-    # detected corners (twodpoints)
+# Perform camera calibration by
+# passing the value of above found out 3D points (threedpoints)
+# and its corresponding pixel coordinates of the
+# detected corners (twodpoints)
 
 ret, matrix, distortion, r_vecs, t_vecs = cv.calibrateCamera(
     objpoints, imgpoints, gray.shape[::-1], None, None)
