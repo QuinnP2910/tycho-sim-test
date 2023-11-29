@@ -76,7 +76,7 @@ def main(sim):
         if cv2.waitKey(1) & 0xFF == ord('s'):
             if result:
                 simulation_instance.init_leader_position([z, -x, -y], [-roll, -yaw, pitch])
-        if cv2.waitKey(1) & 0xFF == ord('q'):
+        elif cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
     # Release the video capture object
