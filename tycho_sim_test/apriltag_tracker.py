@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import math
 
 from TychoSim import TychoSim
 
@@ -21,15 +22,14 @@ def track_apriltag(image):
         # Assuming you have a single AprilTag in the scene
         tag_id = ids[0][0]
 
-        cameraMatrix = np.array([[1.38177620e+03, 0.00000000e+00, 5.68619767e+02],
-                                 [0.00000000e+00, 1.44635760e+03, 3.38215946e+02],
-                                 [0.00000000e+00, 0.00000000e+00, 1.00000000e+00]])
+        cameraMatrix = np.array([[959.30876891,   0.,         590.29902055],
+ [  0.,         976.07955436, 467.10804575],
+ [  0.,           0.,           1.,        ]])
 
-        distCoeffs = np.array([-2.59102674e-01, 3.74137215e+00, -9.23851828e-04, 7.21012570e-03,
-                               -2.99522420e+01])
+        distCoeffs = np.array([-0.14018771,  0.17704573,  0.02988585, -0.01282493, -0.10035589])
 
         # Estimate pose
-        rvec, tvec, _ = cv2.aruco.estimatePoseSingleMarkers(corners, 1.0, cameraMatrix=cameraMatrix,
+        rvec, tvec, _ = cv2.aruco.estimatePoseSingleMarkers(corners, 0.05, cameraMatrix=cameraMatrix,
                                                             distCoeffs=distCoeffs)
 
         # Convert rotation vector to rotation matrix
@@ -40,7 +40,7 @@ def track_apriltag(image):
 
         # Extract euler angles (yaw, pitch, roll)
         angles = cv2.RQDecomp3x3(R)[0]
-        yaw, pitch, roll = angles[0], angles[1], angles[2]
+        yaw, pitch, roll = math.radians(angles[0]), math.radians(angles[1]), math.radians(angles[2])
 
         return tag_id, x, y, z, yaw, pitch, roll
 
@@ -50,7 +50,7 @@ def track_apriltag(image):
 # Main function
 def main(sim):
     # Open video capture (0 for default camera)
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(2)
 
     while cap.isOpened():
         ret, frame = cap.read()
@@ -63,16 +63,19 @@ def main(sim):
 
         if result:
             tag_id, x, y, z, yaw, pitch, roll = result
-            simulation_instance.set_leader_position([x, y, z], [yaw, pitch, roll])
+            simulation_instance.set_leader_position([z, -x, -y], [-roll, -yaw, pitch])
             print(f"AprilTag ID: {tag_id}")
-            print(f"Position: ({x:.2f}, {y:.2f}, {z:.2f})")
-            print(f"Euler Angles: Yaw={yaw:.2f}, Pitch={pitch:.2f}, Roll={roll:.2f}")
+            print(f"Position: ({x:.5f}, {y:.5f}, {z:.5f})")
+            print(f"Euler Angles: Yaw={yaw:.5f}, Pitch={pitch:.5f}, Roll={roll:.5f}")
             print()
 
         # Display the frame
         cv2.imshow('AprilTag Tracking', frame)
 
         # Break the loop if 'q' is pressed
+        if cv2.waitKey(1) & 0xFF == ord('s'):
+            if result:
+                simulation_instance.init_leader_position([z, -x, -y], [-roll, -yaw, pitch])
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 

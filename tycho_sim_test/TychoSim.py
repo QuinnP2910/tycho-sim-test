@@ -5,7 +5,7 @@ import threading
 
 
 class TychoSim:
-    def __init__(self, joint_positions, model_path='./src/mujoco_mode/assets/hebi.xml'):
+    def __init__(self, joint_positions, model_path='./assets/hebi.xml'):
         self.m = mujoco.MjModel.from_xml_path(model_path)
         self.m.opt.timestep = 0.002
         self.d = mujoco.MjData(self.m)
@@ -145,7 +145,7 @@ class TychoSim:
 
         self.leader_starting_pos_rx = -leader_rotations[0]
         self.leader_starting_pos_ry = leader_rotations[2]
-        self.leader_starting_pos_rz = leader_rotations[1]
+        self.leader_starting_pos_rz = -leader_rotations[1]
 
     def update_simulation_state(self):
         mujoco.mj_step(self.m, self.d)
