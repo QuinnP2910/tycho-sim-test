@@ -22,11 +22,11 @@ def track_apriltag(image):
         # Assuming you have a single AprilTag in the scene
         tag_id = ids[0][0]
 
-        cameraMatrix = np.array([[959.30876891,   0.,         590.29902055],
- [  0.,         976.07955436, 467.10804575],
- [  0.,           0.,           1.,        ]])
+        cameraMatrix = np.array([[1.02388096e+03, 0.00000000e+00, 5.92969843e+02]
+, [0.00000000e+00, 1.01675390e+03, 2.99690700e+02]
+, [0.00000000e+00, 0.00000000e+00, 1.00000000e+00]])
 
-        distCoeffs = np.array([-0.14018771,  0.17704573,  0.02988585, -0.01282493, -0.10035589])
+        distCoeffs = np.array([-0.07735032, 0.22902652, -0.00891713, -0.01716781, -0.25817705])
 
         # Estimate pose
         rvec, tvec, _ = cv2.aruco.estimatePoseSingleMarkers(corners, 0.05, cameraMatrix=cameraMatrix,
@@ -34,6 +34,12 @@ def track_apriltag(image):
 
         # Convert rotation vector to rotation matrix
         R, _ = cv2.Rodrigues(rvec)
+        # camera_rot = np.radians(45)
+        # rotation_matrix_45_deg = np.array([[np.cos(camera_rot), 0, np.sin(camera_rot)],
+        #                                    [0, 1, 0],
+        #                                    [-np.sin(camera_rot), 0, np.cos(camera_rot)]])
+        # R = np.dot(rotation_matrix_45_deg, R)
+
 
         # Extract position (x, y, z)
         x, y, z = tvec[0][0]

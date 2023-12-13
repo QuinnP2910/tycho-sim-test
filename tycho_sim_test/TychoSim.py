@@ -3,7 +3,6 @@ import mujoco.viewer
 import numpy as np
 import threading
 
-
 class TychoSim:
     def __init__(self, joint_positions, model_path='./assets/hebi.xml'):
         self.m = mujoco.MjModel.from_xml_path(model_path)
@@ -108,6 +107,7 @@ class TychoSim:
         self.d.ctrl[self.chop_x_actuator_idx] = -(leader_positions[0] - self.leader_starting_pos_x)
         self.d.ctrl[self.chop_y_actuator_idx] = -(leader_positions[2] - self.leader_starting_pos_y)
         self.d.ctrl[self.chop_z_actuator_idx] = -(leader_positions[1] - self.leader_starting_pos_z)
+        print(-(leader_positions[1] - self.leader_starting_pos_z))
 
         ALLOWABLE_ROT_MOVEMENT = 10.0
 
@@ -115,8 +115,8 @@ class TychoSim:
             -leader_rotations[0], self.leader_starting_pos_rx
         )
         if (
-                self.d.ctrl[self.chop_rx_actuator_idx] < -ALLOWABLE_ROT_MOVEMENT
-                or self.d.ctrl[self.chop_rx_actuator_idx] > ALLOWABLE_ROT_MOVEMENT
+            self.d.ctrl[self.chop_rx_actuator_idx] < -ALLOWABLE_ROT_MOVEMENT
+            or self.d.ctrl[self.chop_rx_actuator_idx] > ALLOWABLE_ROT_MOVEMENT
         ):
             self.d.ctrl[self.chop_rx_actuator_idx] = 0.0
 
@@ -124,17 +124,17 @@ class TychoSim:
             leader_rotations[2], self.leader_starting_pos_ry
         )
         if (
-                self.d.ctrl[self.chop_ry_actuator_idx] < -ALLOWABLE_ROT_MOVEMENT
-                or self.d.ctrl[self.chop_ry_actuator_idx] > ALLOWABLE_ROT_MOVEMENT
+            self.d.ctrl[self.chop_ry_actuator_idx] < -ALLOWABLE_ROT_MOVEMENT
+            or self.d.ctrl[self.chop_ry_actuator_idx] > ALLOWABLE_ROT_MOVEMENT
         ):
             self.d.ctrl[self.chop_ry_actuator_idx] = 0.0
-
+            
         self.d.ctrl[self.chop_rz_actuator_idx] = self.calculate_angle_difference(
             -leader_rotations[1], self.leader_starting_pos_rz
         )
         if (
-                self.d.ctrl[self.chop_rz_actuator_idx] < -ALLOWABLE_ROT_MOVEMENT
-                or self.d.ctrl[self.chop_rz_actuator_idx] > ALLOWABLE_ROT_MOVEMENT
+            self.d.ctrl[self.chop_rz_actuator_idx] < -ALLOWABLE_ROT_MOVEMENT
+            or self.d.ctrl[self.chop_rz_actuator_idx] > ALLOWABLE_ROT_MOVEMENT
         ):
             self.d.ctrl[self.chop_rz_actuator_idx] = 0.0
 
@@ -162,8 +162,6 @@ class TychoSim:
         # Pick up changes to the physics state, apply perturbations, update options from GUI.
         self.viewer.sync()
 
-
 if __name__ == '__main__':
-    simulation_instance = TychoSim(
-        [-1.69926117, 1.91009097, 2.09709026, -0.09968156, 1.5817661, 0.07704814, -0.37601018])
+    simulation_instance = TychoSim([-1.69926117, 1.91009097, 2.09709026, -0.09968156, 1.5817661, 0.07704814, -0.37601018])
     simulation_instance.run_simulation()

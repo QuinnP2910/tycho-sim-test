@@ -25,7 +25,7 @@
     </asset>
     <default>
         <default class="translation">
-            <general gainprm="50000" biasprm="0 -50000 -10" biastype="affine" ctrlrange="-0.2 0.2"/>
+            <general gainprm="10000" biasprm="0 -10000 -1" biastype="affine" ctrlrange="-0.2 0.2"/>
         </default>
         <default class="rotation">
             <!--
